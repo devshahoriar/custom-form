@@ -10,12 +10,19 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
-import { Button } from "./ui/button";
+import { Button } from "./ui/button"; 
+
+export type StepError = {
+  hasError: boolean;
+  message?: string;
+};
 
 type TypeStepContext = {
   currentStep: number;
   setCurrentStep: Dispatch<SetStateAction<number>>;
   steps: number;
+  stepErrors?: Record<number, StepError>;
+  setStepErrors?: Dispatch<SetStateAction<Record<number, StepError>>>;
 };
 
 const StepperContext = createContext<TypeStepContext | null>(null);
@@ -33,6 +40,8 @@ type StepperProps = {
   initialStep?: number;
   title: string;
   className?: string;
+  onComplete?: () => void | Promise<void>;
+  completeLabel?: string;
 };
 
 // Stepper Component
@@ -41,42 +50,95 @@ export const Stapper = ({
   initialStep = 1,
   title,
   className,
+  onComplete,
+  completeLabel = "Complete",
 }: StepperProps) => {
   const [currentStep, setCurrentStep] = useState(initialStep);
+  const [stepErrors, setStepErrors] = useState<Record<number, StepError>>({});
   const stepCount = getSteps(children).length;
   return (
     <StepperContext.Provider
-      value={{ currentStep, setCurrentStep, steps: stepCount }}
+      value={{
+        currentStep,
+        setCurrentStep,
+        steps: stepCount,
+        setStepErrors,
+        stepErrors,
+      }}
     >
-      <StepContent title={title} className={className}>
+      <StepContent
+        completeLabel={completeLabel}
+        onComplete={onComplete}
+        title={title}
+        className={className}
+      >
         {children}
       </StepContent>
     </StepperContext.Provider>
   );
 };
 
+const useStep = (children: ReactNode) => {
+  const { currentStep, setCurrentStep, steps, setStepErrors, stepErrors } =
+    useStepContext();
+  const stepsComponents = getSteps(children);
+
+  const activeStep = stepsComponents[
+    currentStep - 1
+  ] as ReactElement<StepProps>;
+
+  const validateStep = async (): Promise<StepError> => {
+    if (activeStep?.props?.validate) {
+      const validationResult = await activeStep.props.validate();
+
+      if (validationResult.hasError && setStepErrors) {
+        setStepErrors((prev) => ({ ...prev, [currentStep]: validationResult }));
+      }
+      return validationResult;
+    }
+    return { hasError: false };
+  };
+
+  const handelNext = async (onComplete?: () => void | Promise<void>) => {
+    const validationResult = await validateStep();
+    if (validationResult.hasError) {
+      return;
+    }
+    setCurrentStep((prev) => Math.min(prev + 1, steps));
+    if (currentStep === steps && onComplete) {
+      await onComplete();
+    }
+  };
+
+  const handelPrev = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  return {
+    handelNext,
+    handelPrev,
+    stepErrors,
+    currentStep,
+    steps,
+    step: activeStep,
+  };
+};
+
 const StepContent = ({
   children,
   className,
   title,
+  onComplete,
+  completeLabel,
 }: {
   children: ReactNode;
   title: string;
   className?: string;
+  onComplete?: () => void | Promise<void>;
+  completeLabel?: string;
 }) => {
-  const { steps, currentStep, setCurrentStep } = useStepContext();
-  const activeStep = getSteps(children)[
-    currentStep - 1
-  ] as ReactElement<StepProps>;
-  const nextStep = () => {
-    if (activeStep?.props?.validate && !activeStep.props.validate()) {
-      return;
-    }
-    setCurrentStep((prev) => Math.min(prev + 1, steps));
-  };
-  const prevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
-  };
+  const { handelNext, handelPrev, currentStep, steps, stepErrors, step } =
+    useStep(children);
 
   return (
     <>
@@ -85,31 +147,35 @@ const StepContent = ({
       >
         <h2 className="mb-4 text-2xl font-bold">{title}</h2>
         <StepIndicatorHeader />
-        {activeStep}
+        {step}
         <div className="mt-4 flex justify-between">
-          <Button onClick={prevStep} disabled={currentStep === 1}>
+          <Button onClick={() => handelPrev()} disabled={currentStep === 1}>
             Previous
           </Button>
-          <Button onClick={nextStep} disabled={currentStep === steps}>
-            Next
+          <Button onClick={() => handelNext(onComplete)}>
+            {currentStep === steps ? completeLabel : "Next"}
           </Button>
         </div>
       </div>
     </>
   );
 };
-// Step Component
 
+// Step Component
 type StepProps = {
   children: ReactNode;
-  validate?: () => boolean;
+  validate?: () => StepError | Promise<StepError>;
 };
 
-export const Step = ({ children, validate }: StepProps) => {
-  const { steps } = useStepContext();
+export const Step = ({ children }: StepProps) => {
+  const { stepErrors, currentStep } = useStepContext();
+  const error = stepErrors ? stepErrors[currentStep] : undefined;
   return (
     <>
-      {children} {steps}
+      {error?.hasError && (
+        <p className="mb-2 text-center text-sm text-red-500">{error.message}</p>
+      )}
+      {children}
     </>
   );
 };
@@ -118,10 +184,13 @@ export const Step = ({ children, validate }: StepProps) => {
 const StepIndicatorHeader = () => {
   const { currentStep, steps } = useStepContext();
   return (
-    <div className="mb-4 flex items-center justify-between">
+    <div className="mx-auto mb-4 flex items-center justify-between">
       {Array.from({ length: steps }, (_, i) => i + 1).map((step, index) => {
         return (
-          <div key={step} className="flex flex-1 items-center">
+          <div
+            key={step}
+            className={cn("flex items-center", index < steps - 1 && "flex-1")}
+          >
             <StepIndicator
               isCurrent={currentStep === step}
               isCompleted={currentStep > step}
@@ -139,13 +208,26 @@ const StepIndicator = ({
   isCompleted,
   isCurrent,
   position,
+  isError,
 }: {
   isCurrent: boolean;
   isCompleted: boolean;
   position: string | number;
+  isError?: boolean;
 }) => {
   const baseClasses =
     "flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300";
+
+  if (isError) {
+    return (
+      <div
+        className={`${baseClasses} border-red-500 bg-red-500 text-sm text-white`}
+      >
+        !
+      </div>
+    );
+  }
+
   if (isCurrent) {
     return (
       <div className={`${baseClasses} border-blue-500 bg-blue-500 text-white`}>
@@ -156,7 +238,7 @@ const StepIndicator = ({
   if (isCompleted) {
     return (
       <div
-        className={`${baseClasses} border-green-500 bg-green-500 text-white text-sm`}
+        className={`${baseClasses} border-green-500 bg-green-500 text-sm text-white`}
       >
         ✓
       </div>
@@ -169,13 +251,11 @@ const StepIndicator = ({
   );
 };
 
-const StepBar = ({ isCompleted }: { isCompleted: boolean }) => {
-  return (
-    <div
-      className={`h-1 flex-1 ${isCompleted ? "bg-green-500" : "bg-gray-300"}`}
-    />
-  );
-};
+const StepBar = ({ isCompleted }: { isCompleted: boolean }) => (
+  <div
+    className={`h-1 flex-1 ${isCompleted ? "bg-green-500" : "bg-gray-300"}`}
+  />
+);
 
 // Utility function to count Step components
 const getSteps = (children: ReactNode): ReactNode[] =>

@@ -15,6 +15,9 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    IMAGE_KIT_PUBLIC_KEY: z.string(),
+    IMAGE_KIT_PRIVET_KEY: z.string(),
+    IMAGE_KIT_URL: z.string(),
   },
 
   /**
@@ -34,6 +37,9 @@ export const env = createEnv({
     AUTH_SECRET: process.env.AUTH_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
+    IMAGE_KIT_PUBLIC_KEY: process.env.IMAGE_KIT_PUBLIC_KEY,
+    IMAGE_KIT_PRIVET_KEY: process.env.IMAGE_KIT_PRIVET_KEY,
+    IMAGE_KIT_URL: process.env.IMAGE_KIT_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

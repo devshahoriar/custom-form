@@ -10,7 +10,7 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
-import { Button } from "./ui/button"; 
+import { Button } from "./ui/button";
 
 export type StepError = {
   hasError: boolean;
@@ -38,7 +38,7 @@ const useStepContext = () => {
 type StepperProps = {
   children: ReactNode;
   initialStep?: number;
-  title: string;
+  title?: string;
   className?: string;
   onComplete?: () => void | Promise<void>;
   completeLabel?: string;
@@ -132,7 +132,7 @@ const StepContent = ({
   completeLabel,
 }: {
   children: ReactNode;
-  title: string;
+  title?: string;
   className?: string;
   onComplete?: () => void | Promise<void>;
   completeLabel?: string;
@@ -143,16 +143,16 @@ const StepContent = ({
   return (
     <>
       <div
-        className={cn("max-w-xl rounded-lg border p-6 shadow-md", className)}
+        className={cn("", className)}
       >
-        <h2 className="mb-4 text-2xl font-bold">{title}</h2>
+        {title && <h2 className="mb-4 text-2xl font-bold">{title}</h2>}
         <StepIndicatorHeader />
         {step}
         <div className="mt-4 flex justify-between">
-          <Button onClick={() => handelPrev()} disabled={currentStep === 1}>
+          <Button type='button' onClick={() => handelPrev()} disabled={currentStep === 1}>
             Previous
           </Button>
-          <Button onClick={() => handelNext(onComplete)}>
+          <Button type='button' onClick={() => handelNext(onComplete)}>
             {currentStep === steps ? completeLabel : "Next"}
           </Button>
         </div>

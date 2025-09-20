@@ -21,6 +21,7 @@ import SliderField from './SliderField';
 import SwitchField from './SwitchField';
 import TextAreaField from './TextAreaField';
 import TextField from "./TextField";
+import DropZoneField from './DropZoneField';
 
 export type FromRef<TfromValues extends FieldValues> = {
   control: Control<TfromValues>;
@@ -103,5 +104,6 @@ Form.Switch = SwitchField;
 Form.Checkbox = CheckboxField;
 Form.DatePicker = DatePickerField;
 Form.Array = ArrayField;
+Form.DropZone = DropZoneField;
 
 export default Form;

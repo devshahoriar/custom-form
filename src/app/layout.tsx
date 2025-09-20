@@ -19,7 +19,11 @@ const geist = Geist({
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  modal,
+}: Readonly<{ 
+  children: React.ReactNode;
+  modal: React.ReactNode;
+}>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${geist.variable}`}>
       <body>
@@ -31,6 +35,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            {modal}
           </ThemeProvider>
         </TRPCReactProvider>
       </body>

@@ -47,7 +47,7 @@ const DropZoneField = <T extends FieldValues>({
   title = "Upload Files",
   icon,
   maxFiles = 1,
-  showPreview = true,
+  showPreview = false,
   accept = { "image/*": [] },
   onlyIcon = false,
 }: DropZoneFieldProps<T>) => {

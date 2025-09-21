@@ -1,21 +1,34 @@
 "use client";
+import { useFormContext } from "@/components/form";
 import type { FromRef } from "@/components/form/Form";
 import Form from "@/components/form/Form";
 import { Stapper } from "@/components/Stepper";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
+import { useWatch } from "react-hook-form";
 import {
   defaultEmployeeValues,
   EmployeeSchema,
+  employmentFids,
+  getCategoryOptions,
+  getGoalOptionsFromCategory,
+  personalFids,
   type EmployeeFormType,
 } from "./AddEmployeeSchema";
-import { Card } from '@/components/ui/card';
+import useTriggerFrom from "./useTriggerFrom";
 
 const AddEmployee = ({ showHeader = false }: { showHeader?: boolean }) => {
   const ref = useRef<FromRef<EmployeeFormType>>(null);
+  const submitButton = useRef<HTMLButtonElement>(null);
+  const trigger = useTriggerFrom<EmployeeFormType>();
+
+  useEffect(() => {
+    console.log(ref.current?.getValues());
+  }, [ref.current?.formState]);
+
   const handleSubmit = (data: EmployeeFormType) => {
-    console.log("Form submitted:", data);
-    // Handle form submission here
+    alert(JSON.stringify(data, null, 2));
   };
   return (
     <div className={cn(showHeader && "mx-auto mt-5 max-w-2xl", "mb-10")}>
@@ -33,39 +46,65 @@ const AddEmployee = ({ showHeader = false }: { showHeader?: boolean }) => {
         className="space-y-4"
         mode="onSubmit"
       >
-        <Stapper>
-          <Stapper.Step>
+        <Stapper onComplete={() => submitButton.current?.click()}>
+          <Stapper.Step
+            validate={() => trigger(ref.current?.form, [...personalFids])}
+          >
             <PersonalDetailsFileds />
           </Stapper.Step>
-          <Stapper.Step>
+          <Stapper.Step
+            validate={() => trigger(ref.current?.form, [...employmentFids])}
+          >
             <EmploymentDetailsFields />
           </Stapper.Step>
-          <Stapper.Step>
+          <Stapper.Step
+            validate={() =>
+              trigger(ref.current?.form, ["professionalExperience"])
+            }
+          >
             <ProfessionalExperienceFields />
           </Stapper.Step>
-          <Stapper.Step>
+          <Stapper.Step
+            validate={() =>
+              trigger(ref.current?.form, [
+                "skillsAndGoals.skillCategory",
+                "skillsAndGoals.goal",
+              ])
+            }
+          >
             <SkillsAndGoalsFields />
           </Stapper.Step>
-          <Stapper.Step>
+          <Stapper.Step
+            validate={() =>
+              trigger(ref.current?.form, [
+                "policyAgreement.termsOfService",
+                "policyAgreement.privacyPolicy",
+                "policyAgreement.codeOfConduct",
+                "confirmation.confirm",
+              ])
+            }
+          >
             <PolicyFields />
           </Stapper.Step>
         </Stapper>
+        <button type="submit" ref={submitButton} hidden className="hidden" />
       </Form>
     </div>
   );
 };
-
 
 const PersonalDetailsFileds = () => {
   return (
     <Card className="p-6">
       <div className="mb-4">
         <h3 className="text-lg font-semibold">Personal Information</h3>
-        <p className="text-sm text-muted-foreground">Please fill in your personal details</p>
+        <p className="text-muted-foreground text-sm">
+          Please fill in your personal details
+        </p>
       </div>
-      
+
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Form.Input<EmployeeFormType>
             name="personalInformation.firstName"
             label="First Name"
@@ -93,29 +132,33 @@ const PersonalDetailsFileds = () => {
           name="personalInformation.profileImage"
           label="Profile Image"
           title="Upload Profile Image"
+          maxFiles={1}
+          showPreview={true}
           onUpload={async (_files) => {
-            return { id: "temp-id", url: "temp-url" };
+            return { id: "temp-id", url: "www.fb.com" };
           }}
           onRemove={async (_fileId, _url) => {
             return;
           }}
         />
 
-        <Form.Input<EmployeeFormType>
+        <Form.Password<EmployeeFormType>
           name="personalInformation.password"
           label="Password"
-          type="password"
           placeholder="Enter your password"
+          showRequirementsList
+          showStrengthIndicator
         />
 
         <Form.Select<EmployeeFormType>
           name="personalInformation.gender"
           label="Gender"
+          className="w-full"
           placeholder="Select your gender"
           options={[
             { value: "male", label: "Male" },
             { value: "female", label: "Female" },
-            { value: "other", label: "Other" }
+            { value: "other", label: "Other" },
           ]}
         />
 
@@ -139,21 +182,21 @@ const PersonalDetailsFileds = () => {
           className="min-h-20"
         />
 
-        <div className="border-t pt-4 mt-4">
-          <h4 className="font-medium mb-3">Emergency Contact</h4>
+        <div className="mt-4 border-t pt-4">
+          <h4 className="mb-3 font-medium">Emergency Contact</h4>
           <div className="space-y-4">
             <Form.Input<EmployeeFormType>
               name="personalInformation.emergencyContact.name"
               label="Contact Name"
               placeholder="Enter emergency contact name"
             />
-            
+
             <Form.Input<EmployeeFormType>
               name="personalInformation.emergencyContact.relationship"
               label="Relationship"
               placeholder="Enter relationship (e.g., spouse, parent)"
             />
-            
+
             <Form.Input<EmployeeFormType>
               name="personalInformation.emergencyContact.contactNumber"
               label="Emergency Contact Number"
@@ -171,11 +214,13 @@ const EmploymentDetailsFields = () => {
     <Card className="p-6">
       <div className="mb-4">
         <h3 className="text-lg font-semibold">Employment Details</h3>
-        <p className="text-sm text-muted-foreground">Please provide your employment information</p>
+        <p className="text-muted-foreground text-sm">
+          Please provide your employment information
+        </p>
       </div>
-      
+
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Form.Input<EmployeeFormType>
             name="employmentDetails.jobTitle"
             label="Job Title"
@@ -188,7 +233,7 @@ const EmploymentDetailsFields = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Form.Input<EmployeeFormType>
             name="employmentDetails.employeeId"
             label="Employee ID"
@@ -210,10 +255,11 @@ const EmploymentDetailsFields = () => {
           name="employmentDetails.jobType"
           label="Job Type"
           placeholder="Select job type"
+          className="w-full"
           options={[
             { value: "Full-time", label: "Full-time" },
             { value: "Part-time", label: "Part-time" },
-            { value: "Contract", label: "Contract" }
+            { value: "Contract", label: "Contract" },
           ]}
         />
 
@@ -233,15 +279,17 @@ const ProfessionalExperienceFields = () => {
     <Card className="p-6">
       <div className="mb-4">
         <h3 className="text-lg font-semibold">Professional Experience</h3>
-        <p className="text-sm text-muted-foreground">Add your previous work experiences</p>
+        <p className="text-muted-foreground text-sm">
+          Add your previous work experiences
+        </p>
       </div>
-      
+
       <Form.Array<EmployeeFormType> name="professionalExperience">
         {({ append, fields, remove }) => (
           <div className="space-y-4">
             {fields.map((field, index) => (
-              <Card key={field.id} className="p-4 border-dashed">
-                <div className="flex justify-between items-center mb-4">
+              <Card key={field.id} className="border-dashed p-4">
+                <div className="mb-4 flex items-center justify-between">
                   <h4 className="font-medium">Experience {index + 1}</h4>
                   <button
                     type="button"
@@ -251,9 +299,9 @@ const ProfessionalExperienceFields = () => {
                     Remove
                   </button>
                 </div>
-                
+
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <Form.Input<EmployeeFormType>
                       name={`professionalExperience.${index}.companyName`}
                       label="Company Name"
@@ -265,8 +313,8 @@ const ProfessionalExperienceFields = () => {
                       placeholder="Enter job title"
                     />
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <Form.DatePicker<EmployeeFormType>
                       name={`professionalExperience.${index}.startDate`}
                       label="Start Date"
@@ -276,7 +324,7 @@ const ProfessionalExperienceFields = () => {
                       label="End Date"
                     />
                   </div>
-                  
+
                   <Form.TextArea<EmployeeFormType>
                     name={`professionalExperience.${index}.jobSummary`}
                     label="Job Summary"
@@ -286,17 +334,19 @@ const ProfessionalExperienceFields = () => {
                 </div>
               </Card>
             ))}
-            
+
             <button
               type="button"
-              onClick={() => append({
-                companyName: "",
-                jobTitle: "",
-                startDate: new Date(),
-                endDate: new Date(),
-                jobSummary: ""
-              })}
-              className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
+              onClick={() =>
+                append({
+                  companyName: "",
+                  jobTitle: "",
+                  startDate: new Date(),
+                  endDate: new Date(),
+                  jobSummary: "",
+                })
+              }
+              className="w-full rounded-lg border-2 border-dashed border-gray-300 p-4 transition-colors hover:border-gray-400"
             >
               + Add Experience
             </button>
@@ -312,55 +362,71 @@ const SkillsAndGoalsFields = () => {
     <Card className="p-6">
       <div className="mb-4">
         <h3 className="text-lg font-semibold">Skills and Goals</h3>
-        <p className="text-sm text-muted-foreground">Share your skills and career goals</p>
+        <p className="text-muted-foreground text-sm">
+          Select your skill category and career goals
+        </p>
       </div>
-      
+
       <div className="space-y-6">
         <div>
-          <h4 className="font-medium mb-3">Skills</h4>
-          <Form.Array<EmployeeFormType> name="skillsAndGoals.skills">
-            {({ append, fields, remove }) => (
-              <div className="space-y-3">
-                {fields.map((field, index) => (
-                  <div key={field.id} className="flex gap-2">
-                    <Form.Input<EmployeeFormType>
-                      name={`skillsAndGoals.skills.${index}` as const}
-                      placeholder="Enter a skill"
-                      className="flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => remove(index)}
-                      className="px-3 py-2 text-red-500 hover:text-red-700 border border-red-200 rounded-md hover:bg-red-50"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                
-                <button
-                  type="button"
-                  // @ts-expect-error - TypeScript is confused about the array type
-                  onClick={() => append("")}
-                  className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-                >
-                  + Add Skill
-                </button>
-              </div>
-            )}
-          </Form.Array>
+          <Form.RadioGroup<EmployeeFormType>
+            name="skillsAndGoals.skillCategory"
+            label="Select Skill Category"
+            options={getCategoryOptions()}
+            className="space-y-3"
+          />
         </div>
 
         <div>
-          <Form.TextArea<EmployeeFormType>
-            name="skillsAndGoals.goal"
-            label="Career Goals"
-            placeholder="Describe your career goals and aspirations"
-            className="min-h-24"
-          />
+          <DynamicGoalsSelect />
         </div>
       </div>
     </Card>
+  );
+};
+
+// Separate component for dynamic goals selection
+const DynamicGoalsSelect = () => {
+  const control = useFormContext<EmployeeFormType>();
+
+  // Watch the skill category field to get real-time updates
+  const selectedCategory = useWatch({
+    control,
+    name: "skillsAndGoals.skillCategory",
+    defaultValue: "",
+  });
+
+  // Get goal options based on selected category
+  const goalOptions = getGoalOptionsFromCategory(selectedCategory || "");
+  const isDisabled = goalOptions.length === 0;
+
+  return (
+    <div className="space-y-2">
+      <Form.Select<EmployeeFormType>
+        name="skillsAndGoals.goal"
+        label="Career Goals"
+        placeholder={
+          isDisabled
+            ? "Select a skill category first to enable goals"
+            : `Select your goal from ${selectedCategory} options`
+        }
+        options={goalOptions}
+        disabled={isDisabled}
+        className="w-full"
+        key={selectedCategory} // Force re-render and reset when category changes
+      />
+      {isDisabled ? (
+        <p className="text-muted-foreground text-sm">
+          Please select a skill category to choose a career goal.
+        </p>
+      ) : (
+        <p className="text-muted-foreground text-sm">
+          Showing goals from:{" "}
+          {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}{" "}
+          category
+        </p>
+      )}
+    </div>
   );
 };
 
@@ -369,9 +435,11 @@ const PolicyFields = () => {
     <Card className="p-6">
       <div className="mb-4">
         <h3 className="text-lg font-semibold">Policy Agreement</h3>
-        <p className="text-sm text-muted-foreground">Please review and accept our policies</p>
+        <p className="text-muted-foreground text-sm">
+          Please review and accept our policies
+        </p>
       </div>
-      
+
       <div className="space-y-6">
         <Form.Checkbox<EmployeeFormType>
           name="policyAgreement.termsOfService"
@@ -391,8 +459,8 @@ const PolicyFields = () => {
           description="I agree to follow the company's Code of Conduct"
         />
 
-        <div className="border-t pt-4 mt-6">
-          <h4 className="font-medium mb-3">Confirmation</h4>
+        <div className="mt-6 border-t pt-4">
+          <h4 className="mb-3 font-medium">Confirmation</h4>
           <Form.Checkbox<EmployeeFormType>
             name="confirmation.confirm"
             label="Data Accuracy Confirmation"
@@ -403,6 +471,5 @@ const PolicyFields = () => {
     </Card>
   );
 };
-
 
 export default AddEmployee;

@@ -16,6 +16,7 @@ import { FormContext } from ".";
 import ArrayField from './ArrayField';
 import CheckboxField from './CheckboxField';
 import DatePickerField from './DatePickerField';
+import PasswordField from './PasswordField';
 import SelectField from './SelectField';
 import SliderField from './SliderField';
 import SwitchField from './SwitchField';
@@ -98,6 +99,7 @@ const Form = <TSchema extends ZodType>({
 
 Form.displayName = "Form";
 Form.Input = TextField;
+Form.Password = PasswordField;
 Form.TextArea = TextAreaField;
 Form.Select = SelectField;
 Form.Slider = SliderField;

@@ -1,11 +1,8 @@
 import z from "zod";
 
-const phoneRegExp = /^(\+\d{1,3}[- ]?)?\d{10}$/;
+export const phoneRegExp = /^(\+\d{1,3}[- ]?)?\d{10}$/;
 
-const phoneSchema = z
-  .string()
-  .min(10)
-  .regex(phoneRegExp, "Phone number is not valid");
+const phoneSchema = z.string().min(10);
 
 export const checkUserNameUnique = async (username: string) => {
   const existingUsernames = ["john_doe", "jane_smith", "admin"];
@@ -111,7 +108,7 @@ export const EmployeeSchema = z.object({
     }),
     profileImage: z.object({
       id: z.string(),
-      url: z.string().url("Invalid URL"),
+      url: z.string(),
     }),
     password: passwordSchema,
     gender: z.enum(genderTypes, {
@@ -152,8 +149,8 @@ export const EmployeeSchema = z.object({
       .optional(),
   ),
   skillsAndGoals: z.object({
-    skills: z.array(z.string()).optional(),
-    goal: z.string().optional(),
+    skillCategory: z.string().min(1, "Please select a skill category"),
+    goal: z.string().min(1, "Please select a career goal"),
   }),
   policyAgreement: z.object({
     termsOfService: z.boolean().refine((val) => val === true, {
@@ -171,8 +168,7 @@ export const EmployeeSchema = z.object({
       message: "You must confirm that the information provided is accurate",
     }),
   }),
-})
-
+});
 
 export type EmployeeFormType = z.infer<typeof EmployeeSchema>;
 
@@ -181,6 +177,7 @@ export const defaultEmployeeValues: EmployeeFormType = {
     firstName: "",
     lastName: "",
     userName: "",
+
     dbo: new Date(),
     profileImage: {
       id: "",
@@ -204,11 +201,11 @@ export const defaultEmployeeValues: EmployeeFormType = {
     joiningDate: new Date(),
     reportingManager: "",
     jobType: "Full-time",
-    salary: undefined,
+    salary: 0,
   },
   professionalExperience: [],
   skillsAndGoals: {
-    skills: [],
+    skillCategory: "",
     goal: "",
   },
   policyAgreement: {
@@ -219,4 +216,75 @@ export const defaultEmployeeValues: EmployeeFormType = {
   confirmation: {
     confirm: false,
   },
-}
+};
+
+export const skillsOptions = {
+  engineering: [
+    { value: "react", label: "React" },
+    { value: "nodejs", label: "NodeJS" },
+    { value: "python", label: "Python" },
+    { value: "javascript", label: "JavaScript" },
+    { value: "typescript", label: "TypeScript" },
+    { value: "docker", label: "Docker" },
+  ],
+  hr: [
+    { value: "recruitment", label: "Recruitment" },
+    { value: "employee-relations", label: "Employee Relations" },
+    { value: "training", label: "Training and Development" },
+    { value: "payroll", label: "Payroll Management" },
+    { value: "performance-management", label: "Performance Management" },
+  ],
+  marketing: [
+    { value: "seo", label: "SEO" },
+    { value: "content-marketing", label: "Content Marketing" },
+    { value: "social-media", label: "Social Media" },
+    { value: "email-marketing", label: "Email Marketing" },
+    { value: "analytics", label: "Analytics" },
+  ],
+};
+
+// Helper function to get goal options based on selected skill category
+export const getGoalOptionsFromCategory = (selectedCategory: string) => {
+  if (
+    !selectedCategory ||
+    !skillsOptions[selectedCategory as keyof typeof skillsOptions]
+  ) {
+    return [];
+  }
+
+  return skillsOptions[selectedCategory as keyof typeof skillsOptions];
+};
+
+// Helper function to get category options for radio buttons
+export const getCategoryOptions = () => {
+  return Object.keys(skillsOptions).map((key) => ({
+    value: key,
+    label: key.charAt(0).toUpperCase() + key.slice(1), // Capitalize first letter
+  }));
+};
+
+export const personalFids = [
+  "personalInformation.firstName",
+  "personalInformation.lastName",
+  "personalInformation.userName",
+  "personalInformation.dbo",
+  "personalInformation.profileImage",
+  "personalInformation.password",
+  "personalInformation.gender",
+  "personalInformation.contactNumber",
+  "personalInformation.email",
+  "personalInformation.homeAddress",
+  "personalInformation.emergencyContact.name",
+  "personalInformation.emergencyContact.relationship",
+  "personalInformation.emergencyContact.contactNumber",
+] as const;
+
+export const employmentFids = [
+  "employmentDetails.jobTitle",
+  "employmentDetails.department",
+  "employmentDetails.employeeId",
+  "employmentDetails.joiningDate",
+  "employmentDetails.reportingManager",
+  "employmentDetails.jobType",
+  "employmentDetails.salary",
+] as const;

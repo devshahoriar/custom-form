@@ -1,4 +1,4 @@
-import AddEmployee from "@/app/(site)/AddEmployee";
+import AddEmployee from "@/app/(site)/addEmploy/AddEmployee";
 import Modal from "./Modal";
 
 export default function InterceptedLoginPage() {

@@ -180,7 +180,7 @@ export const Step = ({ children }: StepProps) => {
     </>
   );
 };
-
+Stapper.Step = Step;
 // Step indicator header
 const StepIndicatorHeader = () => {
   const { currentStep, steps } = useStepContext();

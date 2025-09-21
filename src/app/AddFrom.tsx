@@ -61,7 +61,10 @@ const FormSchema = z.object({
       { message: "You must be at least 18 years old" },
     ),
   skills: z.array(z.string()).min(1, "Select at least one skill"),
-  image: z.string({ required_error: "Image is required" }),
+  image: z.object({
+    id: z.string(),
+    url: z.string().url("Invalid URL"),
+  }),
 });
 
 type FormType = z.infer<typeof FormSchema>;
@@ -75,7 +78,10 @@ const defaultValues = {
   notification: false,
   birthDay: undefined as Date | undefined,
   skills: ["sss"] as string[],
-  image: "",
+  image: {
+    id: "",
+    url: "",
+  },
 };
 
 const AddFrom = () => {
@@ -84,6 +90,11 @@ const AddFrom = () => {
     console.log("Form submitted:", data);
     // Handle form submission here
   };
+
+  const showResult = () => {
+    console.log(ref.current?.getValues());
+  }
+
   return (
     <div className="mx-auto mt-10 w-md rounded border p-3 shadow-md">
       <Form
@@ -115,7 +126,7 @@ const AddFrom = () => {
         <Form.DatePicker<FormType>
           name="birthDay"
           label="Birthdate"
-          dateDisabled={(date) => date > new Date()}
+          // dateDisabled={(date) => date > new Date()}
         />
         <Form.DropZone<FormType>
           name="image"
@@ -125,8 +136,8 @@ const AddFrom = () => {
             return { id: "id", url: "kk" };
           }}
           title="Upload Image"
-          onRemove={async (fileId) => {
-            return 
+          onRemove={async (fileId, url) => {
+            return;
           }}
           // onlyIcon={true}
           icon={<Camera />}
@@ -182,8 +193,8 @@ const AddFrom = () => {
           }}
         </Form.Array>
 
-        <Button type="submit" className="">
-          Submit
+        <Button onClick={showResult} type="button" className="">
+          Submi t
         </Button>
       </Form>
     </div>

@@ -27,7 +27,7 @@ type DropZoneFieldProps<T extends FieldValues> = {
   className?: string;
   disabled?: boolean;
   onUpload: (file: File) => Promise<{ id: string; url: string }>;
-  onRemove: (id: string, url: string) => Promise<null>;
+  onRemove: (id: string, url: string) => Promise<undefined>;
   title?: string;
   icon?: React.ReactNode;
   maxFiles?: number;

@@ -22,6 +22,7 @@ import SwitchField from './SwitchField';
 import TextAreaField from './TextAreaField';
 import TextField from "./TextField";
 import DropZoneField from './DropZoneField';
+import RadioGroupField from './RadioGroupField';
 
 export type FromRef<TfromValues extends FieldValues> = {
   control: Control<TfromValues>;
@@ -105,5 +106,6 @@ Form.Checkbox = CheckboxField;
 Form.DatePicker = DatePickerField;
 Form.Array = ArrayField;
 Form.DropZone = DropZoneField;
+Form.RadioGroup = RadioGroupField;
 
 export default Form;

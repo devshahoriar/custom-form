@@ -12,7 +12,7 @@ const HomePage = () => {
           <p>Welcome to employee system</p>
         </div>
         <div>
-          <Button>
+          <Button asChild>
             <Link href={"/addEmploy"}>go</Link>
           </Button>
         </div>

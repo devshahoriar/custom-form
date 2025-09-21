@@ -17,7 +17,7 @@ export default function Modal({ children }: { children: React.ReactNode }) {
 
   return (
     <Dialog defaultOpen={true} open={true} onOpenChange={handleOpenChange}>
-      <DialogContent className='min-w-2xl'>
+      <DialogContent className='min-w-2xl max-h-[80vh] overflow-auto'>
         <DialogHeader>
           <DialogTitle>New Employee</DialogTitle>
           <DialogDescription>

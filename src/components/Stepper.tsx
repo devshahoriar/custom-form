@@ -88,15 +88,16 @@ const useStep = (children: ReactNode) => {
   ] as ReactElement<StepProps>;
 
   const validateStep = async (): Promise<StepError> => {
-    if (activeStep?.props?.validate) {
-      const validationResult = await activeStep.props.validate();
+    const validate = activeStep?.props?.validate
+    if (validate) {
+      const validationResult = await validate();
 
       if (validationResult.hasError && setStepErrors) {
         setStepErrors((prev) => ({ ...prev, [currentStep]: validationResult }));
       }
       return validationResult;
     }
-    return { hasError: false };
+    return { hasError: false,message: ""};
   };
 
   const handelNext = async (onComplete?: () => void | Promise<void>) => {

@@ -1,7 +1,7 @@
 'use client';
 
 import type { FieldValues, Path } from "react-hook-form";
-import { useFormContext } from ".";
+
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import {
   Select,
@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useFormContext } from './Form';
 
 type SelectOption = {
   value: string;

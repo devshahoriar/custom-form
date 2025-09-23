@@ -1,9 +1,9 @@
 'use client';
 
 import type { FieldValues, Path } from "react-hook-form";
-import { useFormContext } from ".";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { useFormContext } from './Form';
 
 type RadioOption = {
   value: string;

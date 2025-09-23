@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import type { FieldValues, Path } from "react-hook-form";
-import { useFormContext } from ".";
+
 import { Checkbox } from "../ui/checkbox";
 import {
     FormControl,
@@ -11,6 +11,7 @@ import {
     FormLabel,
     FormMessage,
 } from "../ui/form";
+import { useFormContext } from './Form';
 
 type CheckboxFieldProps<T extends FieldValues> = {
   name: Path<T>;

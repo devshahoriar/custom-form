@@ -2,7 +2,6 @@
 
 import { cn } from "@/lib/utils";
 import type { FieldValues, Path } from "react-hook-form";
-import { useFormContext } from ".";
 import { Switch } from "../ui/switch";
 import {
     FormControl,
@@ -11,6 +10,7 @@ import {
     FormLabel,
     FormMessage,
 } from "../ui/form";
+import { useFormContext } from './Form';
 
 type SwitchFieldProps<T extends FieldValues> = {
   name: Path<T>;

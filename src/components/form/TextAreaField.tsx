@@ -1,7 +1,6 @@
 "use client";
 
 import type { FieldValues, Path } from "react-hook-form";
-import { useFormContext } from ".";
 import {
   FormControl,
   FormField,
@@ -11,6 +10,7 @@ import {
 } from "../ui/form";
 import { cn } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
+import { useFormContext } from './Form';
 
 type TextAreaFieldProps<T extends FieldValues> = {
   name: Path<T>;

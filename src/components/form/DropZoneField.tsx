@@ -4,7 +4,7 @@
 import React from "react";
 import { useDropzone, type Accept } from "react-dropzone";
 import type { FieldValues, Path } from "react-hook-form";
-import { useFormContext } from ".";
+
 import {
   FormControl,
   FormField,
@@ -14,6 +14,7 @@ import {
 } from "../ui/form";
 import { Button } from "../ui/button";
 import Image from "next/image";
+import { useFormContext } from './Form';
 
 type FileData = {
   id: string;
